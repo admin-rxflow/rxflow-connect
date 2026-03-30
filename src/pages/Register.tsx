@@ -71,9 +71,16 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      // 1. Create user account
+      // 1. Create user account and pass pharmacy data to the trigger
       const { error: signUpError, data } = await signUp(email, password, {
         pharmacy_name: pharmacyName,
+        cnpj: cnpj || null,
+        phone: phone || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        postal_code: postalCode || null,
+        plan: plan,
       });
 
       if (signUpError) {
@@ -82,58 +89,8 @@ const Register = () => {
         return;
       }
 
-      if (!data?.user) {
-        toast.error('Erro ao criar conta');
-        setIsLoading(false);
-        return;
-      }
-
-      // 2. Create tenant (pharmacy)
-      const { data: tenant, error: tenantError } = await supabase
-        .from('rx_tenants')
-        .insert({
-          name: pharmacyName,
-          cnpj: cnpj || null,
-          email,
-          phone: phone || null,
-          address: address || null,
-          city: city || null,
-          state: state || null,
-          postal_code: postalCode || null,
-          plan,
-          created_by: data.user.id,
-        })
-        .select()
-        .single();
-
-      if (tenantError) {
-        console.error('Tenant creation error:', tenantError);
-        toast.error('Erro ao criar farmácia', { description: tenantError.message });
-        setIsLoading(false);
-        return;
-      }
-
-      // 3. Create tenant_user linking
-      const { error: tuError } = await supabase
-        .from('rx_tenant_users')
-        .insert({
-          tenant_id: tenant.id,
-          user_id: data.user.id,
-          role: 'admin',
-        });
-
-      if (tuError) {
-        console.error('Tenant user error:', tuError);
-      }
-
-      // 4. Create default AI config
-      await supabase.from('rx_ai_configs').insert({
-        tenant_id: tenant.id,
-        pharmacy_name: pharmacyName,
-      });
-
       toast.success('Conta criada com sucesso!', {
-        description: 'Verifique seu e-mail para confirmar a conta.',
+        description: 'Verifique seu e-mail para confirmar a conta e liberar seu acesso.',
       });
 
       navigate('/login');

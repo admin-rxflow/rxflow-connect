@@ -450,10 +450,13 @@ CREATE TRIGGER trg_rx_knowledge_base_updated_at
   BEFORE UPDATE ON rx_knowledge_base
   FOR EACH ROW EXECUTE FUNCTION rx_update_updated_at_column();
 
--- Auto-create public profile on signup
+-- Auto-create public profile and tenant on signup
 CREATE OR REPLACE FUNCTION public.rx_handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_tenant_id UUID;
 BEGIN
+  -- 1. Create Profile
   INSERT INTO public.rx_profiles (id, email, full_name, avatar_url)
   VALUES (
     NEW.id,
@@ -461,6 +464,42 @@ BEGIN
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'avatar_url'
   );
+
+  -- 2. Create Tenant (Pharmacy) if metadata is provided
+  IF NEW.raw_user_meta_data->>'pharmacy_name' IS NOT NULL THEN
+    INSERT INTO public.rx_tenants (
+      name, 
+      cnpj, 
+      email, 
+      phone, 
+      address, 
+      city, 
+      state, 
+      postal_code, 
+      plan, 
+      created_by
+    ) VALUES (
+      NEW.raw_user_meta_data->>'pharmacy_name',
+      NEW.raw_user_meta_data->>'cnpj',
+      NEW.email,
+      NEW.raw_user_meta_data->>'phone',
+      NEW.raw_user_meta_data->>'address',
+      NEW.raw_user_meta_data->>'city',
+      NEW.raw_user_meta_data->>'state',
+      NEW.raw_user_meta_data->>'postal_code',
+      COALESCE(NEW.raw_user_meta_data->>'plan', 'basic'),
+      NEW.id
+    ) RETURNING id INTO v_tenant_id;
+
+    -- 3. Link User to Tenant as Admin
+    INSERT INTO public.rx_tenant_users (tenant_id, user_id, role)
+    VALUES (v_tenant_id, NEW.id, 'admin');
+
+    -- 4. Create AI Config
+    INSERT INTO public.rx_ai_configs (tenant_id, pharmacy_name)
+    VALUES (v_tenant_id, NEW.raw_user_meta_data->>'pharmacy_name');
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
