@@ -9,6 +9,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================
+-- 0. rx_profiles (Perfis de Usuário mapeados do Auth)
+-- ============================================================
+CREATE TABLE rx_profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  full_name VARCHAR(255),
+  avatar_url TEXT,
+  role VARCHAR(50) DEFAULT 'user',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
 -- 1. rx_tenants (Farmácias)
 -- ============================================================
 CREATE TABLE rx_tenants (
@@ -436,6 +449,25 @@ CREATE TRIGGER trg_rx_inventory_updated_at
 CREATE TRIGGER trg_rx_knowledge_base_updated_at
   BEFORE UPDATE ON rx_knowledge_base
   FOR EACH ROW EXECUTE FUNCTION rx_update_updated_at_column();
+
+-- Auto-create public profile on signup
+CREATE OR REPLACE FUNCTION public.rx_handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.rx_profiles (id, email, full_name, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'avatar_url'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.rx_handle_new_user();
 
 -- Audit order status changes
 CREATE OR REPLACE FUNCTION rx_audit_order_status_change()

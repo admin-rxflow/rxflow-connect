@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ArrowRight, ArrowLeft, Building2, UserPlus, CheckCircle2 } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, Building2, UserPlus, CheckCircle2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Register = () => {
@@ -189,11 +189,17 @@ const Register = () => {
           </CardHeader>
           <CardContent className="p-6 pt-4">
             {step === 1 ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="reg-email">E-mail</Label>
-                  <Input id="reg-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 bg-background/50" />
-                </div>
+                <div className="space-y-4">
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex gap-3 text-sm animate-fade-in mt-2 mb-4">
+                    <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <p className="text-muted-foreground leading-snug">
+                      <strong className="text-foreground">Importante:</strong> Este e-mail será o <strong className="text-primary">Proprietário (Admin)</strong> da conta da farmácia. Ele terá privilégio total para convidar sua equipe e gerenciar o sistema.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-email">E-mail do Proprietário</Label>
+                    <Input id="reg-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 bg-background/50" />
+                  </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-password">Senha</Label>
                   <Input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 bg-background/50" />
