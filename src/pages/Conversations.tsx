@@ -57,6 +57,11 @@ const Conversations = () => {
     <div className="flex gap-4 h-[calc(100vh-8rem)]">
       {/* Conversation List */}
       <Card className="w-[380px] flex-shrink-0 border-0 shadow-md flex flex-col">
+        {tenantId === null && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 m-3 rounded-md text-xs font-bold text-center">
+            ⚠️ O seu usuário não tem tenant_id no AuthContext. Crie uma nova conta!
+          </div>
+        )}
         <CardHeader className="pb-3 space-y-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary" />
