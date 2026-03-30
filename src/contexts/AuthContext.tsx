@@ -63,9 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
-        fetchTenantUser(currentSession.user.id);
+        fetchTenantUser(currentSession.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Listen for auth changes
@@ -75,12 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          await fetchTenantUser(newSession.user.id);
+          // Usamos setTimeout para evitar um 'deadlock' com a promessa do cliente GoTrue do Supabase
+          setTimeout(async () => {
+            await fetchTenantUser(newSession.user.id);
+            setLoading(false);
+          }, 0);
         } else {
           setTenantUser(null);
+          setLoading(false);
         }
-
-        setLoading(false);
       }
     );
 
