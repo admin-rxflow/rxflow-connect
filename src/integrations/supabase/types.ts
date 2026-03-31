@@ -382,6 +382,7 @@ export type Database = {
           last_synced_at: string | null
           manufacturer: string | null
           margin: number | null
+          markup: number | null
           maximum_stock: number | null
           medication_code: string
           medication_name: string
@@ -408,6 +409,7 @@ export type Database = {
           last_synced_at?: string | null
           manufacturer?: string | null
           margin?: number | null
+          markup?: number | null
           maximum_stock?: number | null
           medication_code: string
           medication_name: string
@@ -434,6 +436,7 @@ export type Database = {
           last_synced_at?: string | null
           manufacturer?: string | null
           margin?: number | null
+          markup?: number | null
           maximum_stock?: number | null
           medication_code?: string
           medication_name?: string

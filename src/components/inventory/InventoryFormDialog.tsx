@@ -117,6 +117,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
       factory_price: Number(factoryPrice),
       purchase_price: Number(purchasePrice),
       margin: computedMargin,
+      markup: computedMarkup,
       active,
       requires_prescription: requiresPrescription,
       age_restricted: ageRestricted,
