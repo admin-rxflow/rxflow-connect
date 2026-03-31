@@ -25,6 +25,17 @@ const stockLevelConfig: Record<string, { label: string; color: string; badgeColo
   out_of_stock: { label: 'Sem estoque', color: 'bg-red-500', badgeColor: 'bg-red-500/10 text-red-600' },
 };
 
+const productTypeConfig: Record<string, { label: string; color: string }> = {
+  reference: { label: 'Referência', color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
+  generic: { label: 'Genérico', color: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400' },
+  similar: { label: 'Similar', color: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20 dark:text-indigo-400' },
+  otc: { label: 'MIP / Livre', color: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400' },
+  supply: { label: 'Correlato', color: 'bg-slate-500/10 text-slate-700 border-slate-500/20 dark:text-slate-400' },
+  cosmetic: { label: 'Perfumaria', color: 'bg-pink-500/10 text-pink-700 border-pink-500/20 dark:text-pink-400' },
+  manipulated: { label: 'Manipulado', color: 'bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400' },
+  other: { label: 'Outros', color: 'bg-gray-500/10 text-gray-700 border-gray-500/20 dark:text-gray-400' },
+};
+
 const Inventory = () => {
   const { tenantId } = useAuth();
   const { data: inventory = [], isLoading } = useInventory(tenantId);
@@ -192,7 +203,12 @@ const Inventory = () => {
 
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {item.requires_prescription && <Badge variant="outline" className="text-[9px] bg-violet-500/10 text-violet-600 border-violet-500/20">Receita</Badge>}
+                          {item.requires_prescription && <Badge variant="outline" className="text-[9px] bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400 dark:bg-red-500/20">Receita</Badge>}
+                          {item.product_type && productTypeConfig[item.product_type] && (
+                            <Badge variant="outline" className={`text-[9px] ${productTypeConfig[item.product_type].color}`}>
+                              {productTypeConfig[item.product_type].label}
+                            </Badge>
+                          )}
                           {item.category && <Badge variant="outline" className="text-[10px]">{item.category}</Badge>}
                         </div>
                       </TableCell>

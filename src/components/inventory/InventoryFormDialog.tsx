@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddInventoryItem, useUpdateInventoryItem, InventoryItem } from '@/hooks/useInventory';
 import { Loader2 } from 'lucide-react';
@@ -26,6 +27,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
   const [code, setCode] = useState('');
   const [category, setCategory] = useState('');
   const [manufacturer, setManufacturer] = useState('');
+  const [productType, setProductType] = useState('reference');
   
   const [stock, setStock] = useState(0);
   const [minStock, setMinStock] = useState(10);
@@ -54,6 +56,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
         setUnitPrice(initialData.unit_price || 0);
         setFactoryPrice(initialData.factory_price || 0);
         setMargin(initialData.margin || 0);
+        setProductType(initialData.product_type || 'reference');
         setActive(initialData.active ?? true);
         setRequiresPrescription(initialData.requires_prescription ?? false);
         setAgeRestricted(initialData.age_restricted ?? false);
@@ -70,6 +73,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
         setUnitPrice(0);
         setFactoryPrice(0);
         setMargin(0);
+        setProductType('reference');
         setActive(true);
         setRequiresPrescription(false);
         setAgeRestricted(false);
@@ -87,6 +91,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
       medication_code: code || `MED-${Math.floor(Math.random() * 10000)}`,
       category: category || null,
       manufacturer: manufacturer || null,
+      product_type: productType,
       current_stock: Number(stock),
       minimum_stock: Number(minStock),
       maximum_stock: Number(maxStock),
@@ -136,8 +141,27 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
               <Input id="manufacturer" value={manufacturer} onChange={e => setManufacturer(e.target.value)} placeholder="Ex: SOMA LIFE" />
             </div>
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <Label htmlFor="category">Categoria</Label>
+              <Label htmlFor="category">Categoria Geral</Label>
               <Input id="category" value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex: Analgésico" />
+            </div>
+
+            <div className="space-y-2 col-span-2">
+              <Label>Tipo de Produto / Anvisa</Label>
+              <Select value={productType} onValueChange={setProductType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="reference">Referência (Original / Ético)</SelectItem>
+                  <SelectItem value="generic">Genérico</SelectItem>
+                  <SelectItem value="similar">Similar</SelectItem>
+                  <SelectItem value="otc">MIP / Medicamento Isento de Prescrição</SelectItem>
+                  <SelectItem value="supply">Correlato / Insumo Médico</SelectItem>
+                  <SelectItem value="cosmetic">Perfumaria / Cosmético</SelectItem>
+                  <SelectItem value="manipulated">Manipulado</SelectItem>
+                  <SelectItem value="other">Outros</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

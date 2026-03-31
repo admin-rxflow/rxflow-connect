@@ -386,6 +386,7 @@ export type Database = {
           medication_code: string
           medication_name: string
           minimum_stock: number | null
+          product_type: string | null
           purchase_price: number | null
           requires_prescription: boolean | null
           sync_source: string | null
@@ -411,6 +412,7 @@ export type Database = {
           medication_code: string
           medication_name: string
           minimum_stock?: number | null
+          product_type?: string | null
           purchase_price?: number | null
           requires_prescription?: boolean | null
           sync_source?: string | null
@@ -436,6 +438,7 @@ export type Database = {
           medication_code?: string
           medication_name?: string
           minimum_stock?: number | null
+          product_type?: string | null
           purchase_price?: number | null
           requires_prescription?: boolean | null
           sync_source?: string | null
