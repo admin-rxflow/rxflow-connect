@@ -89,8 +89,9 @@ const Register = () => {
         return;
       }
 
-      toast.success('Conta criada com sucesso!', {
-        description: 'Verifique seu e-mail para confirmar a conta e liberar seu acesso.',
+      toast.success('🎉 Quase lá! Cadastro recebido com sucesso!', {
+        description: '⚠️ IMPORTANTE: Um link de confirmação foi enviado para o seu e-mail. VOCÊ PRECISA clicar nele para liberar o seu acesso antes de tentar fazer login!',
+        duration: 8000,
       });
 
       navigate('/login');

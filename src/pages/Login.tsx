@@ -27,9 +27,16 @@ const Login = () => {
     const { error } = await signIn(email, password);
 
     if (error) {
-      toast.error('Erro ao fazer login', {
-        description: 'Verifique suas credenciais e tente novamente.',
-      });
+      if (error.message.includes('Invalid login credentials')) {
+        toast.error('Acesso Bloqueado', {
+          description: 'Senha incorreta OU você ainda não confirmou seu e-mail! Por favor, vá na sua caixa de e-mail e clique no link de confirmação antes de tentar logar.',
+          duration: 6000,
+        });
+      } else {
+        toast.error('Erro ao fazer login', {
+          description: 'Verifique suas credenciais e tente novamente.',
+        });
+      }
       setIsLoading(false);
       return;
     }
