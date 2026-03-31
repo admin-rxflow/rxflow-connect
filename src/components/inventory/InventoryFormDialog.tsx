@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -81,6 +81,13 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
     }
   }, [open, initialData]);
 
+  const computedMargin = useMemo(() => {
+    if (unitPrice > 0 && factoryPrice > 0) {
+      return ((unitPrice - factoryPrice) / unitPrice) * 100;
+    }
+    return 0;
+  }, [unitPrice, factoryPrice]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId) return;
@@ -98,7 +105,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
       unit_measure: unitMeasure,
       unit_price: Number(unitPrice),
       factory_price: Number(factoryPrice),
-      margin: Number(margin),
+      margin: computedMargin,
       active,
       requires_prescription: requiresPrescription,
       age_restricted: ageRestricted,
@@ -177,8 +184,15 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
                 <Input id="factoryPrice" type="number" step="0.01" value={factoryPrice} onChange={e => setFactoryPrice(Number(e.target.value))} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="margin">Margem (%)</Label>
-                <Input id="margin" type="number" step="0.1" value={margin} onChange={e => setMargin(Number(e.target.value))} />
+                <Label>Margem (%)</Label>
+                <div className={`flex items-center h-9 rounded-md border px-3 text-sm font-semibold select-none bg-muted/40 ${
+                  computedMargin > 30 ? 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800' :
+                  computedMargin > 0 ? 'text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800' :
+                  'text-muted-foreground'
+                }`}>
+                  {computedMargin > 0 ? `${computedMargin.toFixed(1)}%` : '—'}
+                </div>
+                <p className="text-[10px] text-muted-foreground">Calculado automaticamente</p>
               </div>
             </div>
           </fieldset>
