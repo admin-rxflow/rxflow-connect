@@ -36,7 +36,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
   
   const [unitPrice, setUnitPrice] = useState(0);
   const [factoryPrice, setFactoryPrice] = useState(0);
-  const [margin, setMargin] = useState(0);
+  const [purchasePrice, setPurchasePrice] = useState(0);
 
   const [active, setActive] = useState(true);
   const [requiresPrescription, setRequiresPrescription] = useState(false);
@@ -55,7 +55,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
         setUnitMeasure(initialData.unit_measure || 'UN');
         setUnitPrice(initialData.unit_price || 0);
         setFactoryPrice(initialData.factory_price || 0);
-        setMargin(initialData.margin || 0);
+        setPurchasePrice(initialData.purchase_price || 0);
         setProductType(initialData.product_type || 'reference');
         setActive(initialData.active ?? true);
         setRequiresPrescription(initialData.requires_prescription ?? false);
@@ -72,7 +72,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
         setUnitMeasure('UN');
         setUnitPrice(0);
         setFactoryPrice(0);
-        setMargin(0);
+        setPurchasePrice(0);
         setProductType('reference');
         setActive(true);
         setRequiresPrescription(false);
@@ -82,8 +82,18 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
   }, [open, initialData]);
 
   const computedMargin = useMemo(() => {
+    // Margem financeira real: (Venda - Compra) / Venda — divisor é o preço de venda
+    const costBase = purchasePrice > 0 ? purchasePrice : factoryPrice;
+    if (unitPrice > 0 && costBase > 0) {
+      return ((unitPrice - costBase) / unitPrice) * 100;
+    }
+    return 0;
+  }, [unitPrice, factoryPrice, purchasePrice]);
+
+  const computedMarkup = useMemo(() => {
+    // Markup comercial: (Venda - Fábrica) / Fábrica — divisor é o custo de fábrica (igual à sua planilha)
     if (unitPrice > 0 && factoryPrice > 0) {
-      return ((unitPrice - factoryPrice) / unitPrice) * 100;
+      return ((unitPrice - factoryPrice) / factoryPrice) * 100;
     }
     return 0;
   }, [unitPrice, factoryPrice]);
@@ -105,6 +115,7 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
       unit_measure: unitMeasure,
       unit_price: Number(unitPrice),
       factory_price: Number(factoryPrice),
+      purchase_price: Number(purchasePrice),
       margin: computedMargin,
       active,
       requires_prescription: requiresPrescription,
@@ -174,6 +185,8 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
 
           <fieldset className="border rounded-lg p-4 bg-muted/20">
             <legend className="px-2 text-sm font-semibold text-primary">Financeiro (Uso Interno)</legend>
+            
+            {/* Linha 1 — Inputs de Preco */}
             <div className="grid grid-cols-3 gap-4 mt-2">
               <div className="space-y-2">
                 <Label htmlFor="unitPrice">Valor Venda (R$)</Label>
@@ -184,15 +197,37 @@ export function InventoryFormDialog({ open, onOpenChange, initialData }: Invento
                 <Input id="factoryPrice" type="number" step="0.01" value={factoryPrice} onChange={e => setFactoryPrice(Number(e.target.value))} />
               </div>
               <div className="space-y-2">
-                <Label>Margem (%)</Label>
-                <div className={`flex items-center h-9 rounded-md border px-3 text-sm font-semibold select-none bg-muted/40 ${
+                <Label htmlFor="purchasePrice">Valor Compra (R$)</Label>
+                <Input id="purchasePrice" type="number" step="0.01" value={purchasePrice} onChange={e => setPurchasePrice(Number(e.target.value))} />
+              </div>
+            </div>
+
+            {/* Linha 2 — Indicadores calculados */}
+            <div className="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-dashed">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Margem s/ Venda</p>
+                <div className={`flex items-center justify-between h-10 rounded-md border px-3 text-sm font-bold ${
                   computedMargin > 30 ? 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800' :
-                  computedMargin > 0 ? 'text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800' :
-                  'text-muted-foreground'
+                  computedMargin > 0  ? 'text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800' :
+                  'text-muted-foreground bg-muted/40'
                 }`}>
-                  {computedMargin > 0 ? `${computedMargin.toFixed(1)}%` : '—'}
+                  <span>{computedMargin > 0 ? `${computedMargin.toFixed(2)}%` : '—'}</span>
+                  {computedMargin > 0 && <span className="text-[10px] font-normal opacity-70">Base: Compra</span>}
                 </div>
-                <p className="text-[10px] text-muted-foreground">Calculado automaticamente</p>
+                <p className="text-[10px] text-muted-foreground">(Venda − Compra) ÷ Venda × 100</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Markup s/ Fábrica</p>
+                <div className={`flex items-center justify-between h-10 rounded-md border px-3 text-sm font-bold ${
+                  computedMarkup > 30 ? 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800' :
+                  computedMarkup > 0  ? 'text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800' :
+                  'text-muted-foreground bg-muted/40'
+                }`}>
+                  <span>{computedMarkup > 0 ? `${computedMarkup.toFixed(2)}%` : '—'}</span>
+                  {computedMarkup > 0 && <span className="text-[10px] font-normal opacity-70">Base: Fábrica</span>}
+                </div>
+                <p className="text-[10px] text-muted-foreground">(Venda − Fábrica) ÷ Fábrica × 100</p>
               </div>
             </div>
           </fieldset>
