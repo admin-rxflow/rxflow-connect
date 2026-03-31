@@ -3,26 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Package, Search, Plus, AlertTriangle, CheckCircle, XCircle, TrendingDown, DollarSign, PillIcon } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, Plus, AlertTriangle, CheckCircle, XCircle, TrendingDown, DollarSign, PillIcon, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-const demoInventory = Array.from({ length: 20 }, (_, i) => ({
-  id: `inv_${i}`,
-  medication_code: `MED-${String(1000 + i)}`,
-  medication_name: ['Dipirona 500mg', 'Paracetamol 750mg', 'Ibuprofeno 400mg', 'Amoxicilina 500mg', 'Omeprazol 20mg', 'Losartana 50mg', 'Metformina 850mg', 'Atenolol 50mg', 'Sinvastatina 20mg', 'Fluoxetina 20mg', 'Diclofenaco 50mg', 'Azitromicina 500mg', 'Loratadina 10mg', 'Prednisona 20mg', 'Rivotril 2mg', 'Pantoprazol 40mg', 'Enalapril 10mg', 'Ambroxol xarope', 'Cefalexina 500mg', 'Dexametasona 4mg'][i],
-  current_stock: [120, 85, 45, 3, 200, 15, 0, 78, 156, 8, 12, 0, 8, 67, 34, 90, 5, 55, 22, 11][i],
-  minimum_stock: [20, 20, 15, 10, 30, 10, 10, 20, 25, 10, 20, 5, 15, 10, 10, 20, 10, 15, 10, 10][i],
-  maximum_stock: 500,
-  unit_price: [8.90, 6.50, 12.00, 25.00, 15.00, 18.50, 9.80, 7.20, 14.00, 32.00, 8.00, 28.00, 11.50, 9.00, 45.00, 22.00, 12.00, 16.50, 20.00, 19.00][i],
-  active: true,
-  requires_prescription: [false, false, false, true, false, true, true, true, true, true, false, true, false, true, true, false, true, false, true, true][i],
-  category: ['Analgésico', 'Analgésico', 'Anti-inflamatório', 'Antibiótico', 'Gastrointestinal', 'Cardiovascular', 'Antidiabético', 'Cardiovascular', 'Cardiovascular', 'Antidepressivo', 'Anti-inflamatório', 'Antibiótico', 'Antialérgico', 'Anti-inflamatório', 'Ansiolítico', 'Gastrointestinal', 'Cardiovascular', 'Expectorante', 'Antibiótico', 'Anti-inflamatório'][i],
-}));
+import { useAuth } from '@/contexts/AuthContext';
+import { useInventory, useDeleteInventoryItem, InventoryItem } from '@/hooks/useInventory';
+import { InventoryFormDialog } from '@/components/inventory/InventoryFormDialog';
 
 const getStockLevel = (current: number, min: number) => {
   if (current === 0) return 'out_of_stock';
@@ -37,36 +26,69 @@ const stockLevelConfig: Record<string, { label: string; color: string; badgeColo
 };
 
 const Inventory = () => {
+  const { tenantId } = useAuth();
+  const { data: inventory = [], isLoading } = useInventory(tenantId);
+  const { mutate: deleteItem } = useDeleteInventoryItem();
+
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
-  const filtered = demoInventory.filter((item) => {
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: InventoryItem) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir permanentemente este medicamento do banco de dados?')) {
+      if (tenantId) deleteItem({ id, tenantId });
+    }
+  };
+
+  const filtered = inventory.filter((item) => {
     if (search && !item.medication_name.toLowerCase().includes(search.toLowerCase()) && !item.medication_code.includes(search)) return false;
-    const level = getStockLevel(item.current_stock, item.minimum_stock);
+    const level = getStockLevel(item.current_stock ?? 0, item.minimum_stock ?? 0);
     if (tab === 'low' && level !== 'low_stock') return false;
     if (tab === 'out' && level !== 'out_of_stock') return false;
     return true;
   });
 
-  const totalValue = demoInventory.reduce((a, i) => a + i.current_stock * i.unit_price, 0);
-  const normalCount = demoInventory.filter((i) => getStockLevel(i.current_stock, i.minimum_stock) === 'normal').length;
-  const lowCount = demoInventory.filter((i) => getStockLevel(i.current_stock, i.minimum_stock) === 'low_stock').length;
-  const outCount = demoInventory.filter((i) => getStockLevel(i.current_stock, i.minimum_stock) === 'out_of_stock').length;
+  const totalValue = inventory.reduce((acc, i) => acc + ((i.current_stock ?? 0) * (i.unit_price ?? 0)), 0);
+  const lowCount = inventory.filter((i) => getStockLevel(i.current_stock ?? 0, i.minimum_stock ?? 0) === 'low_stock').length;
+  const outCount = inventory.filter((i) => getStockLevel(i.current_stock ?? 0, i.minimum_stock ?? 0) === 'out_of_stock').length;
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-10 h-full">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
+    <div className="space-y-6 animate-fade-in">
+      {/* Resumo Gerencial */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-0 shadow-md">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600"><PillIcon className="w-5 h-5 text-white" /></div>
-            <div><p className="text-xs text-muted-foreground">Total Itens</p><p className="text-xl font-bold">{demoInventory.length}</p></div>
+            <div><p className="text-xs text-muted-foreground">Total Itens</p><p className="text-xl font-bold">{inventory.length}</p></div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600"><DollarSign className="w-5 h-5 text-white" /></div>
-            <div><p className="text-xs text-muted-foreground">Valor Total</p><p className="text-xl font-bold">R$ {totalValue.toFixed(0)}</p></div>
+            <div>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">Vlr. Estoque <span className="text-[10px] bg-slate-100 rounded px-1">Secreto da IA</span></p>
+              <p className="text-xl font-bold">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
@@ -83,82 +105,136 @@ const Inventory = () => {
         </Card>
       </div>
 
-      {/* Inventory Table */}
+      {/* Catálogo Real */}
       <Card className="border-0 shadow-md">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Package className="w-4 h-4 text-primary" />
-              Estoque de Medicamentos
+              <PillIcon className="w-4 h-4 text-primary" />
+              Catálogo de Produtos (Estoque)
             </CardTitle>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Buscar medicamento..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+                <Input placeholder="Buscar produto..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
               </div>
-              <Button className="h-9 gradient-primary border-0 text-xs gap-1"><Plus className="w-3.5 h-3.5" /> Adicionar</Button>
+              <Button onClick={handleAdd} className="h-9 gradient-primary border-0 text-xs gap-1"><Plus className="w-3.5 h-3.5" /> Adicionar</Button>
             </div>
           </div>
           <Tabs value={tab} onValueChange={setTab} className="mt-2">
             <TabsList className="h-8">
-              <TabsTrigger value="all" className="text-xs h-7">Todos ({demoInventory.length})</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs h-7">Todos ({inventory.length})</TabsTrigger>
               <TabsTrigger value="low" className="text-xs h-7">Baixo ({lowCount})</TabsTrigger>
               <TabsTrigger value="out" className="text-xs h-7">Sem estoque ({outCount})</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-xs">Medicamento</TableHead>
-                <TableHead className="text-xs">Código</TableHead>
-                <TableHead className="text-xs">Estoque</TableHead>
-                <TableHead className="text-xs">Nível</TableHead>
-                <TableHead className="text-xs text-right">Preço Unit.</TableHead>
-                <TableHead className="text-xs">Receita</TableHead>
-                <TableHead className="text-xs">Categoria</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((item) => {
-                const level = getStockLevel(item.current_stock, item.minimum_stock);
-                const pct = Math.min((item.current_stock / item.maximum_stock) * 100, 100);
-                return (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium text-sm">{item.medication_name}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{item.medication_code}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1 w-32">
-                        <div className="flex justify-between text-xs">
-                          <span className="font-semibold">{item.current_stock}</span>
-                          <span className="text-muted-foreground">/ {item.maximum_stock}</span>
+          {filtered.length === 0 ? (
+            <div className="py-20 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
+                <PillIcon className="w-8 h-8 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground">Estoque vazio</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mt-1 mb-6">Nenhum produto cadastrado que bata com esta pesquisa. Adicione medicamentos para a Inteligência Artificial conseguir oferecer no WhatsApp.</p>
+              <Button onClick={handleAdd} variant="outline" className="gap-2">
+                <Plus className="w-4 h-4" /> Cadastrar Primeiro Produto
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-semibold">Produto</TableHead>
+                  <TableHead className="text-xs font-semibold">Qtd.</TableHead>
+                  <TableHead className="text-xs font-semibold">Nível</TableHead>
+                  <TableHead className="text-xs font-semibold">Classificação</TableHead>
+                  <TableHead className="text-xs text-right font-semibold">Venda (R$)</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((item) => {
+                  const currentStock = item.current_stock ?? 0;
+                  const minStock = item.minimum_stock ?? 0;
+                  const maxStock = item.maximum_stock || 100;
+                  
+                  const level = getStockLevel(currentStock, minStock);
+                  const pct = Math.min((currentStock / maxStock) * 100, 100);
+                  
+                  return (
+                    <TableRow key={item.id} className={!item.active ? 'opacity-50 grayscale' : ''}>
+                      <TableCell>
+                        <div className="font-medium text-sm text-foreground">{item.medication_name}</div>
+                        <div className="flex gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span className="font-mono">{item.medication_code}</span>
+                          {item.manufacturer && <span>• {item.manufacturer}</span>}
                         </div>
-                        <Progress value={pct} className={`h-1.5 ${level === 'out_of_stock' ? '[&>div]:bg-red-500' : level === 'low_stock' ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`} />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={`text-[10px] ${stockLevelConfig[level].badgeColor}`}>
-                        {level === 'out_of_stock' && <XCircle className="w-3 h-3 mr-0.5" />}
-                        {level === 'low_stock' && <AlertTriangle className="w-3 h-3 mr-0.5" />}
-                        {level === 'normal' && <CheckCircle className="w-3 h-3 mr-0.5" />}
-                        {stockLevelConfig[level].label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-sm">R$ {item.unit_price.toFixed(2)}</TableCell>
-                    <TableCell>
-                      {item.requires_prescription && <Badge variant="outline" className="text-[9px] bg-violet-500/10 text-violet-600 border-violet-500/20">Receita</Badge>}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-[10px]">{item.category}</Badge>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="space-y-1 w-28">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-semibold">{currentStock} {item.unit_measure}</span>
+                          </div>
+                          <Progress value={pct} className={`h-1.5 ${level === 'out_of_stock' ? '[&>div]:bg-red-500' : level === 'low_stock' ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`} />
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <Badge variant="secondary" className={`text-[10px] ${stockLevelConfig[level].badgeColor}`}>
+                          {level === 'out_of_stock' && <XCircle className="w-3 h-3 mr-0.5" />}
+                          {level === 'low_stock' && <AlertTriangle className="w-3 h-3 mr-0.5" />}
+                          {level === 'normal' && <CheckCircle className="w-3 h-3 mr-0.5" />}
+                          {stockLevelConfig[level].label}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {item.requires_prescription && <Badge variant="outline" className="text-[9px] bg-violet-500/10 text-violet-600 border-violet-500/20">Receita</Badge>}
+                          {item.category && <Badge variant="outline" className="text-[10px]">{item.category}</Badge>}
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-right font-semibold text-sm">
+                        R$ {(item.unit_price ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(item)} className="cursor-pointer">
+                              <Pencil className="mr-2 h-4 w-4" /> Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDelete(item.id)} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100 dark:focus:bg-red-950">
+                              <Trash2 className="mr-2 h-4 w-4" /> Excluir permanentemente
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      <InventoryFormDialog 
+        open={isModalOpen} 
+        onOpenChange={setIsModalOpen} 
+        initialData={editingItem} 
+      />
     </div>
   );
 };

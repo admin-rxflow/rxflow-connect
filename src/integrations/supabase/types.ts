@@ -377,15 +377,20 @@ export type Database = {
           current_stock: number | null
           description: string | null
           external_id: string | null
+          factory_price: number | null
           id: string
           last_synced_at: string | null
+          manufacturer: string | null
+          margin: number | null
           maximum_stock: number | null
           medication_code: string
           medication_name: string
           minimum_stock: number | null
+          purchase_price: number | null
           requires_prescription: boolean | null
           sync_source: string | null
           tenant_id: string
+          unit_measure: string | null
           unit_price: number | null
           updated_at: string | null
         }
@@ -397,15 +402,20 @@ export type Database = {
           current_stock?: number | null
           description?: string | null
           external_id?: string | null
+          factory_price?: number | null
           id?: string
           last_synced_at?: string | null
+          manufacturer?: string | null
+          margin?: number | null
           maximum_stock?: number | null
           medication_code: string
           medication_name: string
           minimum_stock?: number | null
+          purchase_price?: number | null
           requires_prescription?: boolean | null
           sync_source?: string | null
           tenant_id: string
+          unit_measure?: string | null
           unit_price?: number | null
           updated_at?: string | null
         }
@@ -417,15 +427,20 @@ export type Database = {
           current_stock?: number | null
           description?: string | null
           external_id?: string | null
+          factory_price?: number | null
           id?: string
           last_synced_at?: string | null
+          manufacturer?: string | null
+          margin?: number | null
           maximum_stock?: number | null
           medication_code?: string
           medication_name?: string
           minimum_stock?: number | null
+          purchase_price?: number | null
           requires_prescription?: boolean | null
           sync_source?: string | null
           tenant_id?: string
+          unit_measure?: string | null
           unit_price?: number | null
           updated_at?: string | null
         }
