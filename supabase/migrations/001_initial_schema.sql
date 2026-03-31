@@ -1044,15 +1044,16 @@ CREATE POLICY "Anyone can insert tenant during registration" ON rx_tenants
   FOR INSERT WITH CHECK (TRUE);
 
 -- RLS Policies: rx_tenant_users
+CREATE POLICY "Users can view their own tenant user record" ON rx_tenant_users
+  FOR SELECT USING (user_id = auth.uid());
 CREATE POLICY "Users can view their tenant members" ON rx_tenant_users
-  FOR SELECT USING (tenant_id = rx_get_user_tenant_id());
+  FOR SELECT USING (
+    tenant_id = (SELECT tenant_id FROM rx_tenant_users WHERE user_id = auth.uid() LIMIT 1)
+  );
 CREATE POLICY "Admins can manage tenant members" ON rx_tenant_users
   FOR ALL USING (
-    tenant_id = rx_get_user_tenant_id()
-    AND EXISTS (
-      SELECT 1 FROM rx_tenant_users tu
-      WHERE tu.user_id = auth.uid() AND tu.tenant_id = rx_tenant_users.tenant_id AND tu.role = 'admin'
-    )
+    tenant_id = (SELECT tenant_id FROM rx_tenant_users WHERE user_id = auth.uid() LIMIT 1)
+    AND (SELECT role FROM rx_tenant_users WHERE user_id = auth.uid() LIMIT 1) = 'admin'
   );
 CREATE POLICY "Users can insert themselves during registration" ON rx_tenant_users
   FOR INSERT WITH CHECK (user_id = auth.uid());
