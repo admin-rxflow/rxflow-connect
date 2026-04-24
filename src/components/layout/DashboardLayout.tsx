@@ -23,7 +23,7 @@ interface DashboardLayoutProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Conversas', href: '/conversations', icon: MessageSquare, badge: 0 },
+  { name: 'Central de Chat', href: '/conversations', icon: MessageSquare, badge: 0 },
   { name: 'Pedidos', href: '/orders', icon: ShoppingCart },
   { name: 'Estoque', href: '/inventory', icon: Package },
   { name: 'Integrações', href: '/integrations', icon: Puzzle },
