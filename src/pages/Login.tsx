@@ -95,7 +95,7 @@ const Login = () => {
           <div className="flex items-center justify-center mb-10 animate-fade-in">
             <picture>
               <source srcSet="/rxflow-logo-dark.png" media="(prefers-color-scheme: dark)" />
-              <img src="/rxflow-logo-light.png" alt="RxFlow" className="h-24 w-auto" />
+              <img src="/rxflow-logo-light.png" alt="RxFlow" className="h-24 w-auto rounded-2xl" />
             </picture>
           </div>
 

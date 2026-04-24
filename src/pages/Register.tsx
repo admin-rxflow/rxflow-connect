@@ -122,7 +122,7 @@ const Register = () => {
         <div className="flex items-center justify-center mb-8 animate-fade-in">
           <picture>
             <source srcSet="/rxflow-logo-dark.png" media="(prefers-color-scheme: dark)" />
-            <img src="/rxflow-logo-light.png" alt="RxFlow" className="h-12 w-auto" />
+            <img src="/rxflow-logo-light.png" alt="RxFlow" className="h-12 w-auto rounded-xl" />
           </picture>
         </div>
 
