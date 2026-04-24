@@ -527,6 +527,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "rx_inventory_alerts_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "vw_rx_inventory_ai"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "rx_inventory_alerts_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -590,6 +597,801 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rx_lista_medicamentos: {
+        Row: {
+          analise_recursal: string | null
+          apresentacao: string | null
+          cap: string | null
+          classe_terapeutica: string | null
+          cnpj: string | null
+          codigo_ggrem: string | null
+          comercializacao_2024: string | null
+          confaz_87: string | null
+          created_at: string | null
+          destinacao_comercial: string | null
+          ds_concentracao: number | null
+          ds_destinacao: string | null
+          ds_forma_fisica: string | null
+          ds_restricao_prescricao: string | null
+          ds_restricao_uso: string | null
+          ean_1: string | null
+          ean_2: string | null
+          ean_3: string | null
+          icms_0_perc: string | null
+          id: number
+          laboratorio: string | null
+          lista_concessao_credito_tribut_pis_cofins: string | null
+          nome_principio_ativo: string | null
+          pf_0_perc: number | null
+          pf_12_perc: number | null
+          pf_12_perc_alc: number | null
+          pf_17_perc: number | null
+          pf_17_perc_5: number | null
+          pf_17_perc_5_alc: number | null
+          pf_17_perc_alc: number | null
+          pf_18_perc: number | null
+          pf_18_perc_alc: number | null
+          pf_19_perc: number | null
+          pf_19_perc_5: number | null
+          pf_19_perc_5_alc: number | null
+          pf_19_perc_alc: number | null
+          pf_20_perc: number | null
+          pf_20_perc_5: number | null
+          pf_20_perc_5_alc: number | null
+          pf_20_perc_alc: number | null
+          pf_21_perc: number | null
+          pf_21_perc_alc: number | null
+          pf_22_perc: number | null
+          pf_22_perc_5: number | null
+          pf_22_perc_5_alc: number | null
+          pf_22_perc_alc: number | null
+          pf_23_perc: number | null
+          pf_23_perc_alc: number | null
+          pf_sem_impostos: number | null
+          pmc_0_perc: number | null
+          pmc_12_perc: number | null
+          pmc_12_perc_alc: number | null
+          pmc_17_perc: number | null
+          pmc_17_perc_5: number | null
+          pmc_17_perc_5_alc: number | null
+          pmc_17_perc_alc: number | null
+          pmc_18_perc: number | null
+          pmc_18_perc_alc: number | null
+          pmc_19_perc: number | null
+          pmc_19_perc_5: number | null
+          pmc_19_perc_5_alc: number | null
+          pmc_19_perc_alc: number | null
+          pmc_20_perc: number | null
+          pmc_20_perc_5: number | null
+          pmc_20_perc_5_alc: number | null
+          pmc_20_perc_alc: number | null
+          pmc_21_perc: number | null
+          pmc_21_perc_alc: number | null
+          pmc_22_perc: number | null
+          pmc_22_perc_5: number | null
+          pmc_22_perc_5_alc: number | null
+          pmc_22_perc_alc: number | null
+          pmc_23_perc: number | null
+          pmc_23_perc_alc: number | null
+          pmc_sem_impostos: number | null
+          produto: string | null
+          regime_de_preco: string | null
+          registro: string | null
+          restricao_hospitalar: string | null
+          st_restrito_hospital: string | null
+          substancia: string | null
+          tarja: string | null
+          tipo_de_produto_status_do_produto: string | null
+        }
+        Insert: {
+          analise_recursal?: string | null
+          apresentacao?: string | null
+          cap?: string | null
+          classe_terapeutica?: string | null
+          cnpj?: string | null
+          codigo_ggrem?: string | null
+          comercializacao_2024?: string | null
+          confaz_87?: string | null
+          created_at?: string | null
+          destinacao_comercial?: string | null
+          ds_concentracao?: number | null
+          ds_destinacao?: string | null
+          ds_forma_fisica?: string | null
+          ds_restricao_prescricao?: string | null
+          ds_restricao_uso?: string | null
+          ean_1?: string | null
+          ean_2?: string | null
+          ean_3?: string | null
+          icms_0_perc?: string | null
+          id?: number
+          laboratorio?: string | null
+          lista_concessao_credito_tribut_pis_cofins?: string | null
+          nome_principio_ativo?: string | null
+          pf_0_perc?: number | null
+          pf_12_perc?: number | null
+          pf_12_perc_alc?: number | null
+          pf_17_perc?: number | null
+          pf_17_perc_5?: number | null
+          pf_17_perc_5_alc?: number | null
+          pf_17_perc_alc?: number | null
+          pf_18_perc?: number | null
+          pf_18_perc_alc?: number | null
+          pf_19_perc?: number | null
+          pf_19_perc_5?: number | null
+          pf_19_perc_5_alc?: number | null
+          pf_19_perc_alc?: number | null
+          pf_20_perc?: number | null
+          pf_20_perc_5?: number | null
+          pf_20_perc_5_alc?: number | null
+          pf_20_perc_alc?: number | null
+          pf_21_perc?: number | null
+          pf_21_perc_alc?: number | null
+          pf_22_perc?: number | null
+          pf_22_perc_5?: number | null
+          pf_22_perc_5_alc?: number | null
+          pf_22_perc_alc?: number | null
+          pf_23_perc?: number | null
+          pf_23_perc_alc?: number | null
+          pf_sem_impostos?: number | null
+          pmc_0_perc?: number | null
+          pmc_12_perc?: number | null
+          pmc_12_perc_alc?: number | null
+          pmc_17_perc?: number | null
+          pmc_17_perc_5?: number | null
+          pmc_17_perc_5_alc?: number | null
+          pmc_17_perc_alc?: number | null
+          pmc_18_perc?: number | null
+          pmc_18_perc_alc?: number | null
+          pmc_19_perc?: number | null
+          pmc_19_perc_5?: number | null
+          pmc_19_perc_5_alc?: number | null
+          pmc_19_perc_alc?: number | null
+          pmc_20_perc?: number | null
+          pmc_20_perc_5?: number | null
+          pmc_20_perc_5_alc?: number | null
+          pmc_20_perc_alc?: number | null
+          pmc_21_perc?: number | null
+          pmc_21_perc_alc?: number | null
+          pmc_22_perc?: number | null
+          pmc_22_perc_5?: number | null
+          pmc_22_perc_5_alc?: number | null
+          pmc_22_perc_alc?: number | null
+          pmc_23_perc?: number | null
+          pmc_23_perc_alc?: number | null
+          pmc_sem_impostos?: number | null
+          produto?: string | null
+          regime_de_preco?: string | null
+          registro?: string | null
+          restricao_hospitalar?: string | null
+          st_restrito_hospital?: string | null
+          substancia?: string | null
+          tarja?: string | null
+          tipo_de_produto_status_do_produto?: string | null
+        }
+        Update: {
+          analise_recursal?: string | null
+          apresentacao?: string | null
+          cap?: string | null
+          classe_terapeutica?: string | null
+          cnpj?: string | null
+          codigo_ggrem?: string | null
+          comercializacao_2024?: string | null
+          confaz_87?: string | null
+          created_at?: string | null
+          destinacao_comercial?: string | null
+          ds_concentracao?: number | null
+          ds_destinacao?: string | null
+          ds_forma_fisica?: string | null
+          ds_restricao_prescricao?: string | null
+          ds_restricao_uso?: string | null
+          ean_1?: string | null
+          ean_2?: string | null
+          ean_3?: string | null
+          icms_0_perc?: string | null
+          id?: number
+          laboratorio?: string | null
+          lista_concessao_credito_tribut_pis_cofins?: string | null
+          nome_principio_ativo?: string | null
+          pf_0_perc?: number | null
+          pf_12_perc?: number | null
+          pf_12_perc_alc?: number | null
+          pf_17_perc?: number | null
+          pf_17_perc_5?: number | null
+          pf_17_perc_5_alc?: number | null
+          pf_17_perc_alc?: number | null
+          pf_18_perc?: number | null
+          pf_18_perc_alc?: number | null
+          pf_19_perc?: number | null
+          pf_19_perc_5?: number | null
+          pf_19_perc_5_alc?: number | null
+          pf_19_perc_alc?: number | null
+          pf_20_perc?: number | null
+          pf_20_perc_5?: number | null
+          pf_20_perc_5_alc?: number | null
+          pf_20_perc_alc?: number | null
+          pf_21_perc?: number | null
+          pf_21_perc_alc?: number | null
+          pf_22_perc?: number | null
+          pf_22_perc_5?: number | null
+          pf_22_perc_5_alc?: number | null
+          pf_22_perc_alc?: number | null
+          pf_23_perc?: number | null
+          pf_23_perc_alc?: number | null
+          pf_sem_impostos?: number | null
+          pmc_0_perc?: number | null
+          pmc_12_perc?: number | null
+          pmc_12_perc_alc?: number | null
+          pmc_17_perc?: number | null
+          pmc_17_perc_5?: number | null
+          pmc_17_perc_5_alc?: number | null
+          pmc_17_perc_alc?: number | null
+          pmc_18_perc?: number | null
+          pmc_18_perc_alc?: number | null
+          pmc_19_perc?: number | null
+          pmc_19_perc_5?: number | null
+          pmc_19_perc_5_alc?: number | null
+          pmc_19_perc_alc?: number | null
+          pmc_20_perc?: number | null
+          pmc_20_perc_5?: number | null
+          pmc_20_perc_5_alc?: number | null
+          pmc_20_perc_alc?: number | null
+          pmc_21_perc?: number | null
+          pmc_21_perc_alc?: number | null
+          pmc_22_perc?: number | null
+          pmc_22_perc_5?: number | null
+          pmc_22_perc_5_alc?: number | null
+          pmc_22_perc_alc?: number | null
+          pmc_23_perc?: number | null
+          pmc_23_perc_alc?: number | null
+          pmc_sem_impostos?: number | null
+          produto?: string | null
+          regime_de_preco?: string | null
+          registro?: string | null
+          restricao_hospitalar?: string | null
+          st_restrito_hospital?: string | null
+          substancia?: string | null
+          tarja?: string | null
+          tipo_de_produto_status_do_produto?: string | null
+        }
+        Relationships: []
+      }
+      rx_lista_medicamentos_anvisa: {
+        Row: {
+          analise_recursal: string | null
+          apresentacao: string | null
+          cap: string | null
+          classe_terapeutica: string | null
+          cnpj: string | null
+          codigo_ggrem: string | null
+          comercializacao_2024: string | null
+          confaz_87: string | null
+          created_at: string | null
+          destinacao_comercial: string | null
+          ds_concentracao: number | null
+          ds_destinacao: string | null
+          ds_forma_fisica: string | null
+          ds_restricao_prescricao: string | null
+          ds_restricao_uso: string | null
+          ean_1: string | null
+          ean_2: string | null
+          ean_3: string | null
+          icms_0_perc: string | null
+          id: number
+          laboratorio: string | null
+          lista_concessao_credito_tribut_pis_cofins: string | null
+          mc_sem_impostos: number | null
+          pf_0_perc: number | null
+          pf_12_perc: number | null
+          pf_12_perc_alc: number | null
+          pf_17_perc: number | null
+          pf_17_perc_5: number | null
+          pf_17_perc_5_alc: number | null
+          pf_17_perc_alc: number | null
+          pf_18_perc: number | null
+          pf_18_perc_alc: number | null
+          pf_19_perc: number | null
+          pf_19_perc_5: number | null
+          pf_19_perc_5_alc: number | null
+          pf_19_perc_alc: number | null
+          pf_20_perc: number | null
+          pf_20_perc_5: number | null
+          pf_20_perc_5_alc: number | null
+          pf_20_perc_alc: number | null
+          pf_21_perc: number | null
+          pf_21_perc_alc: number | null
+          pf_22_perc: number | null
+          pf_22_perc_5: number | null
+          pf_22_perc_5_alc: number | null
+          pf_22_perc_alc: number | null
+          pf_23_perc: number | null
+          pf_23_perc_alc: number | null
+          pf_sem_impostos: number | null
+          pmc_0_perc: number | null
+          pmc_12_perc: number | null
+          pmc_12_perc_alc: number | null
+          pmc_17_perc: number | null
+          pmc_17_perc_5: number | null
+          pmc_17_perc_5_alc: number | null
+          pmc_17_perc_alc: number | null
+          pmc_18_perc: number | null
+          pmc_18_perc_alc: number | null
+          pmc_19_perc: number | null
+          pmc_19_perc_5: number | null
+          pmc_19_perc_5_alc: number | null
+          pmc_19_perc_alc: number | null
+          pmc_20_perc: number | null
+          pmc_20_perc_5: number | null
+          pmc_20_perc_5_alc: number | null
+          pmc_20_perc_alc: number | null
+          pmc_21_perc: number | null
+          pmc_21_perc_alc: number | null
+          pmc_22_perc: number | null
+          pmc_22_perc_5: number | null
+          pmc_22_perc_5_alc: number | null
+          pmc_22_perc_alc: number | null
+          pmc_23_perc: number | null
+          pmc_23_perc_alc: number | null
+          principio_ativo: string | null
+          produto: string | null
+          regime_de_preco: string | null
+          registro: string | null
+          restricao_hospitalar: string | null
+          st_restrito_hospital: string | null
+          substancia: string | null
+          tarja: string | null
+          tipo_de_produto_status_do_produto: string | null
+        }
+        Insert: {
+          analise_recursal?: string | null
+          apresentacao?: string | null
+          cap?: string | null
+          classe_terapeutica?: string | null
+          cnpj?: string | null
+          codigo_ggrem?: string | null
+          comercializacao_2024?: string | null
+          confaz_87?: string | null
+          created_at?: string | null
+          destinacao_comercial?: string | null
+          ds_concentracao?: number | null
+          ds_destinacao?: string | null
+          ds_forma_fisica?: string | null
+          ds_restricao_prescricao?: string | null
+          ds_restricao_uso?: string | null
+          ean_1?: string | null
+          ean_2?: string | null
+          ean_3?: string | null
+          icms_0_perc?: string | null
+          id?: number
+          laboratorio?: string | null
+          lista_concessao_credito_tribut_pis_cofins?: string | null
+          mc_sem_impostos?: number | null
+          pf_0_perc?: number | null
+          pf_12_perc?: number | null
+          pf_12_perc_alc?: number | null
+          pf_17_perc?: number | null
+          pf_17_perc_5?: number | null
+          pf_17_perc_5_alc?: number | null
+          pf_17_perc_alc?: number | null
+          pf_18_perc?: number | null
+          pf_18_perc_alc?: number | null
+          pf_19_perc?: number | null
+          pf_19_perc_5?: number | null
+          pf_19_perc_5_alc?: number | null
+          pf_19_perc_alc?: number | null
+          pf_20_perc?: number | null
+          pf_20_perc_5?: number | null
+          pf_20_perc_5_alc?: number | null
+          pf_20_perc_alc?: number | null
+          pf_21_perc?: number | null
+          pf_21_perc_alc?: number | null
+          pf_22_perc?: number | null
+          pf_22_perc_5?: number | null
+          pf_22_perc_5_alc?: number | null
+          pf_22_perc_alc?: number | null
+          pf_23_perc?: number | null
+          pf_23_perc_alc?: number | null
+          pf_sem_impostos?: number | null
+          pmc_0_perc?: number | null
+          pmc_12_perc?: number | null
+          pmc_12_perc_alc?: number | null
+          pmc_17_perc?: number | null
+          pmc_17_perc_5?: number | null
+          pmc_17_perc_5_alc?: number | null
+          pmc_17_perc_alc?: number | null
+          pmc_18_perc?: number | null
+          pmc_18_perc_alc?: number | null
+          pmc_19_perc?: number | null
+          pmc_19_perc_5?: number | null
+          pmc_19_perc_5_alc?: number | null
+          pmc_19_perc_alc?: number | null
+          pmc_20_perc?: number | null
+          pmc_20_perc_5?: number | null
+          pmc_20_perc_5_alc?: number | null
+          pmc_20_perc_alc?: number | null
+          pmc_21_perc?: number | null
+          pmc_21_perc_alc?: number | null
+          pmc_22_perc?: number | null
+          pmc_22_perc_5?: number | null
+          pmc_22_perc_5_alc?: number | null
+          pmc_22_perc_alc?: number | null
+          pmc_23_perc?: number | null
+          pmc_23_perc_alc?: number | null
+          principio_ativo?: string | null
+          produto?: string | null
+          regime_de_preco?: string | null
+          registro?: string | null
+          restricao_hospitalar?: string | null
+          st_restrito_hospital?: string | null
+          substancia?: string | null
+          tarja?: string | null
+          tipo_de_produto_status_do_produto?: string | null
+        }
+        Update: {
+          analise_recursal?: string | null
+          apresentacao?: string | null
+          cap?: string | null
+          classe_terapeutica?: string | null
+          cnpj?: string | null
+          codigo_ggrem?: string | null
+          comercializacao_2024?: string | null
+          confaz_87?: string | null
+          created_at?: string | null
+          destinacao_comercial?: string | null
+          ds_concentracao?: number | null
+          ds_destinacao?: string | null
+          ds_forma_fisica?: string | null
+          ds_restricao_prescricao?: string | null
+          ds_restricao_uso?: string | null
+          ean_1?: string | null
+          ean_2?: string | null
+          ean_3?: string | null
+          icms_0_perc?: string | null
+          id?: number
+          laboratorio?: string | null
+          lista_concessao_credito_tribut_pis_cofins?: string | null
+          mc_sem_impostos?: number | null
+          pf_0_perc?: number | null
+          pf_12_perc?: number | null
+          pf_12_perc_alc?: number | null
+          pf_17_perc?: number | null
+          pf_17_perc_5?: number | null
+          pf_17_perc_5_alc?: number | null
+          pf_17_perc_alc?: number | null
+          pf_18_perc?: number | null
+          pf_18_perc_alc?: number | null
+          pf_19_perc?: number | null
+          pf_19_perc_5?: number | null
+          pf_19_perc_5_alc?: number | null
+          pf_19_perc_alc?: number | null
+          pf_20_perc?: number | null
+          pf_20_perc_5?: number | null
+          pf_20_perc_5_alc?: number | null
+          pf_20_perc_alc?: number | null
+          pf_21_perc?: number | null
+          pf_21_perc_alc?: number | null
+          pf_22_perc?: number | null
+          pf_22_perc_5?: number | null
+          pf_22_perc_5_alc?: number | null
+          pf_22_perc_alc?: number | null
+          pf_23_perc?: number | null
+          pf_23_perc_alc?: number | null
+          pf_sem_impostos?: number | null
+          pmc_0_perc?: number | null
+          pmc_12_perc?: number | null
+          pmc_12_perc_alc?: number | null
+          pmc_17_perc?: number | null
+          pmc_17_perc_5?: number | null
+          pmc_17_perc_5_alc?: number | null
+          pmc_17_perc_alc?: number | null
+          pmc_18_perc?: number | null
+          pmc_18_perc_alc?: number | null
+          pmc_19_perc?: number | null
+          pmc_19_perc_5?: number | null
+          pmc_19_perc_5_alc?: number | null
+          pmc_19_perc_alc?: number | null
+          pmc_20_perc?: number | null
+          pmc_20_perc_5?: number | null
+          pmc_20_perc_5_alc?: number | null
+          pmc_20_perc_alc?: number | null
+          pmc_21_perc?: number | null
+          pmc_21_perc_alc?: number | null
+          pmc_22_perc?: number | null
+          pmc_22_perc_5?: number | null
+          pmc_22_perc_5_alc?: number | null
+          pmc_22_perc_alc?: number | null
+          pmc_23_perc?: number | null
+          pmc_23_perc_alc?: number | null
+          principio_ativo?: string | null
+          produto?: string | null
+          regime_de_preco?: string | null
+          registro?: string | null
+          restricao_hospitalar?: string | null
+          st_restrito_hospital?: string | null
+          substancia?: string | null
+          tarja?: string | null
+          tipo_de_produto_status_do_produto?: string | null
+        }
+        Relationships: []
+      }
+      rx_lst_medicamentos_precos: {
+        Row: {
+          analise_recursal: string | null
+          apresentacao: string | null
+          cap: string | null
+          classe_terapeutica: string | null
+          cnpj: string | null
+          codigo_ggrem: string | null
+          comercializacao_2024: string | null
+          confaz_87: string | null
+          created_at: string | null
+          destinacao_comercial: string | null
+          ean_1: string | null
+          ean_2: string | null
+          ean_3: string | null
+          icms_0_perc: string | null
+          id: number
+          laboratorio: string | null
+          lista_concessao_credito_tribut_pis_cofins: string | null
+          pf_0_perc: number | null
+          pf_12_perc: number | null
+          pf_12_perc_alc: number | null
+          pf_17_perc: number | null
+          pf_17_perc_5: number | null
+          pf_17_perc_5_alc: number | null
+          pf_17_perc_alc: number | null
+          pf_18_perc: number | null
+          pf_18_perc_alc: number | null
+          pf_19_perc: number | null
+          pf_19_perc_5: number | null
+          pf_19_perc_5_alc: number | null
+          pf_19_perc_alc: number | null
+          pf_20_perc: number | null
+          pf_20_perc_5: number | null
+          pf_20_perc_5_alc: number | null
+          pf_20_perc_alc: number | null
+          pf_21_perc: number | null
+          pf_21_perc_alc: number | null
+          pf_22_perc: number | null
+          pf_22_perc_5: number | null
+          pf_22_perc_5_alc: number | null
+          pf_22_perc_alc: number | null
+          pf_23_perc: number | null
+          pf_23_perc_alc: number | null
+          pf_sem_impostos: number | null
+          pmc_0_perc: number | null
+          pmc_12_perc: number | null
+          pmc_12_perc_alc: number | null
+          pmc_17_perc: number | null
+          pmc_17_perc_5: number | null
+          pmc_17_perc_5_alc: number | null
+          pmc_17_perc_alc: number | null
+          pmc_18_perc: number | null
+          pmc_18_perc_alc: number | null
+          pmc_19_perc: number | null
+          pmc_19_perc_5: number | null
+          pmc_19_perc_5_alc: number | null
+          pmc_19_perc_alc: number | null
+          pmc_20_perc: number | null
+          pmc_20_perc_5: number | null
+          pmc_20_perc_5_alc: number | null
+          pmc_20_perc_alc: number | null
+          pmc_21_perc: number | null
+          pmc_21_perc_alc: number | null
+          pmc_22_perc: number | null
+          pmc_22_perc_5: number | null
+          pmc_22_perc_5_alc: number | null
+          pmc_22_perc_alc: number | null
+          pmc_23_perc: number | null
+          pmc_23_perc_alc: number | null
+          pmc_sem_impostos: number | null
+          produto: string | null
+          regime_de_preco: string | null
+          registro: string | null
+          restricao_hospitalar: string | null
+          substancia: string | null
+          tarja: string | null
+          tipo_de_produto_status_do_produto: string | null
+        }
+        Insert: {
+          analise_recursal?: string | null
+          apresentacao?: string | null
+          cap?: string | null
+          classe_terapeutica?: string | null
+          cnpj?: string | null
+          codigo_ggrem?: string | null
+          comercializacao_2024?: string | null
+          confaz_87?: string | null
+          created_at?: string | null
+          destinacao_comercial?: string | null
+          ean_1?: string | null
+          ean_2?: string | null
+          ean_3?: string | null
+          icms_0_perc?: string | null
+          id?: number
+          laboratorio?: string | null
+          lista_concessao_credito_tribut_pis_cofins?: string | null
+          pf_0_perc?: number | null
+          pf_12_perc?: number | null
+          pf_12_perc_alc?: number | null
+          pf_17_perc?: number | null
+          pf_17_perc_5?: number | null
+          pf_17_perc_5_alc?: number | null
+          pf_17_perc_alc?: number | null
+          pf_18_perc?: number | null
+          pf_18_perc_alc?: number | null
+          pf_19_perc?: number | null
+          pf_19_perc_5?: number | null
+          pf_19_perc_5_alc?: number | null
+          pf_19_perc_alc?: number | null
+          pf_20_perc?: number | null
+          pf_20_perc_5?: number | null
+          pf_20_perc_5_alc?: number | null
+          pf_20_perc_alc?: number | null
+          pf_21_perc?: number | null
+          pf_21_perc_alc?: number | null
+          pf_22_perc?: number | null
+          pf_22_perc_5?: number | null
+          pf_22_perc_5_alc?: number | null
+          pf_22_perc_alc?: number | null
+          pf_23_perc?: number | null
+          pf_23_perc_alc?: number | null
+          pf_sem_impostos?: number | null
+          pmc_0_perc?: number | null
+          pmc_12_perc?: number | null
+          pmc_12_perc_alc?: number | null
+          pmc_17_perc?: number | null
+          pmc_17_perc_5?: number | null
+          pmc_17_perc_5_alc?: number | null
+          pmc_17_perc_alc?: number | null
+          pmc_18_perc?: number | null
+          pmc_18_perc_alc?: number | null
+          pmc_19_perc?: number | null
+          pmc_19_perc_5?: number | null
+          pmc_19_perc_5_alc?: number | null
+          pmc_19_perc_alc?: number | null
+          pmc_20_perc?: number | null
+          pmc_20_perc_5?: number | null
+          pmc_20_perc_5_alc?: number | null
+          pmc_20_perc_alc?: number | null
+          pmc_21_perc?: number | null
+          pmc_21_perc_alc?: number | null
+          pmc_22_perc?: number | null
+          pmc_22_perc_5?: number | null
+          pmc_22_perc_5_alc?: number | null
+          pmc_22_perc_alc?: number | null
+          pmc_23_perc?: number | null
+          pmc_23_perc_alc?: number | null
+          pmc_sem_impostos?: number | null
+          produto?: string | null
+          regime_de_preco?: string | null
+          registro?: string | null
+          restricao_hospitalar?: string | null
+          substancia?: string | null
+          tarja?: string | null
+          tipo_de_produto_status_do_produto?: string | null
+        }
+        Update: {
+          analise_recursal?: string | null
+          apresentacao?: string | null
+          cap?: string | null
+          classe_terapeutica?: string | null
+          cnpj?: string | null
+          codigo_ggrem?: string | null
+          comercializacao_2024?: string | null
+          confaz_87?: string | null
+          created_at?: string | null
+          destinacao_comercial?: string | null
+          ean_1?: string | null
+          ean_2?: string | null
+          ean_3?: string | null
+          icms_0_perc?: string | null
+          id?: number
+          laboratorio?: string | null
+          lista_concessao_credito_tribut_pis_cofins?: string | null
+          pf_0_perc?: number | null
+          pf_12_perc?: number | null
+          pf_12_perc_alc?: number | null
+          pf_17_perc?: number | null
+          pf_17_perc_5?: number | null
+          pf_17_perc_5_alc?: number | null
+          pf_17_perc_alc?: number | null
+          pf_18_perc?: number | null
+          pf_18_perc_alc?: number | null
+          pf_19_perc?: number | null
+          pf_19_perc_5?: number | null
+          pf_19_perc_5_alc?: number | null
+          pf_19_perc_alc?: number | null
+          pf_20_perc?: number | null
+          pf_20_perc_5?: number | null
+          pf_20_perc_5_alc?: number | null
+          pf_20_perc_alc?: number | null
+          pf_21_perc?: number | null
+          pf_21_perc_alc?: number | null
+          pf_22_perc?: number | null
+          pf_22_perc_5?: number | null
+          pf_22_perc_5_alc?: number | null
+          pf_22_perc_alc?: number | null
+          pf_23_perc?: number | null
+          pf_23_perc_alc?: number | null
+          pf_sem_impostos?: number | null
+          pmc_0_perc?: number | null
+          pmc_12_perc?: number | null
+          pmc_12_perc_alc?: number | null
+          pmc_17_perc?: number | null
+          pmc_17_perc_5?: number | null
+          pmc_17_perc_5_alc?: number | null
+          pmc_17_perc_alc?: number | null
+          pmc_18_perc?: number | null
+          pmc_18_perc_alc?: number | null
+          pmc_19_perc?: number | null
+          pmc_19_perc_5?: number | null
+          pmc_19_perc_5_alc?: number | null
+          pmc_19_perc_alc?: number | null
+          pmc_20_perc?: number | null
+          pmc_20_perc_5?: number | null
+          pmc_20_perc_5_alc?: number | null
+          pmc_20_perc_alc?: number | null
+          pmc_21_perc?: number | null
+          pmc_21_perc_alc?: number | null
+          pmc_22_perc?: number | null
+          pmc_22_perc_5?: number | null
+          pmc_22_perc_5_alc?: number | null
+          pmc_22_perc_alc?: number | null
+          pmc_23_perc?: number | null
+          pmc_23_perc_alc?: number | null
+          pmc_sem_impostos?: number | null
+          produto?: string | null
+          regime_de_preco?: string | null
+          registro?: string | null
+          restricao_hospitalar?: string | null
+          substancia?: string | null
+          tarja?: string | null
+          tipo_de_produto_status_do_produto?: string | null
+        }
+        Relationships: []
+      }
+      rx_lst_medicamentos_restricao: {
+        Row: {
+          created_at: string | null
+          ds_categoria_produto: string | null
+          ds_concentracao: string | null
+          ds_destinacao: string | null
+          ds_forma_fisica: string | null
+          ds_restricao_prescricao: string | null
+          ds_restricao_uso: string | null
+          id: number
+          nome_principio_ativo: string | null
+          nome_produto: string | null
+          st_restrito_hospital: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          ds_categoria_produto?: string | null
+          ds_concentracao?: string | null
+          ds_destinacao?: string | null
+          ds_forma_fisica?: string | null
+          ds_restricao_prescricao?: string | null
+          ds_restricao_uso?: string | null
+          id?: number
+          nome_principio_ativo?: string | null
+          nome_produto?: string | null
+          st_restrito_hospital?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          ds_categoria_produto?: string | null
+          ds_concentracao?: string | null
+          ds_destinacao?: string | null
+          ds_forma_fisica?: string | null
+          ds_restricao_prescricao?: string | null
+          ds_restricao_uso?: string | null
+          id?: number
+          nome_principio_ativo?: string | null
+          nome_produto?: string | null
+          st_restrito_hospital?: string | null
+        }
+        Relationships: []
       }
       rx_messages: {
         Row: {
@@ -1068,7 +1870,83 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_rx_inventory_ai: {
+        Row: {
+          active: boolean | null
+          age_restricted: boolean | null
+          category: string | null
+          current_stock: number | null
+          description: string | null
+          external_id: string | null
+          id: string | null
+          last_synced_at: string | null
+          manufacturer: string | null
+          maximum_stock: number | null
+          medication_code: string | null
+          medication_name: string | null
+          minimum_stock: number | null
+          product_type: string | null
+          requires_prescription: boolean | null
+          sync_source: string | null
+          tenant_id: string | null
+          unit_measure: string | null
+          unit_price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          age_restricted?: boolean | null
+          category?: string | null
+          current_stock?: number | null
+          description?: string | null
+          external_id?: string | null
+          id?: string | null
+          last_synced_at?: string | null
+          manufacturer?: string | null
+          maximum_stock?: number | null
+          medication_code?: string | null
+          medication_name?: string | null
+          minimum_stock?: number | null
+          product_type?: string | null
+          requires_prescription?: boolean | null
+          sync_source?: string | null
+          tenant_id?: string | null
+          unit_measure?: string | null
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          age_restricted?: boolean | null
+          category?: string | null
+          current_stock?: number | null
+          description?: string | null
+          external_id?: string | null
+          id?: string | null
+          last_synced_at?: string | null
+          manufacturer?: string | null
+          maximum_stock?: number | null
+          medication_code?: string | null
+          medication_name?: string | null
+          minimum_stock?: number | null
+          product_type?: string | null
+          requires_prescription?: boolean | null
+          sync_source?: string | null
+          tenant_id?: string | null
+          unit_measure?: string | null
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rx_inventory_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "rx_tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       rx_add_message_to_conversation: {
@@ -1265,15 +2143,22 @@ export type Database = {
           current_stock: number | null
           description: string | null
           external_id: string | null
+          factory_price: number | null
           id: string
           last_synced_at: string | null
+          manufacturer: string | null
+          margin: number | null
+          markup: number | null
           maximum_stock: number | null
           medication_code: string
           medication_name: string
           minimum_stock: number | null
+          product_type: string | null
+          purchase_price: number | null
           requires_prescription: boolean | null
           sync_source: string | null
           tenant_id: string
+          unit_measure: string | null
           unit_price: number | null
           updated_at: string | null
         }
