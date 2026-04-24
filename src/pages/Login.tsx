@@ -93,7 +93,10 @@ const Login = () => {
         <div className="w-full max-w-md relative z-10">
           {/* Logo */}
           <div className="flex items-center justify-center mb-10 animate-fade-in">
-            <img src="/rxflow-logo.png" alt="RxFlow" className="h-24 w-auto" />
+            <picture>
+              <source srcSet="/rxflow-logo-dark.png" media="(prefers-color-scheme: dark)" />
+              <img src="/rxflow-logo-light.png" alt="RxFlow" className="h-24 w-auto" />
+            </picture>
           </div>
 
           {/* Welcome text */}
