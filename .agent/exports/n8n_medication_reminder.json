@@ -1,0 +1,410 @@
+{
+  "name": "RxFlow - Lembrete Medicamentos Uso Contínuo",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodes": [
+    {
+      "id": "node-01-schedule",
+      "name": "Agendamento Diario 9h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "node-02-fetch",
+      "name": "Buscar Medicamentos Ativos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.RXFLOW_SUPABASE_URL }}/rest/v1/rx_customer_medications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.RXFLOW_SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.RXFLOW_SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "*,customer:rx_customers(id,full_name,phone,email),medication:rx_inventory(id,medication_name,quantity_per_package)"
+            },
+            {
+              "name": "is_active",
+              "value": "eq.true"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-03-calculate",
+      "name": "Calcular Dias Restantes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const medications = $input.all();\nconst today = new Date();\ntoday.setHours(0,0,0,0);\n\nconst results = [];\n\nfor (const item of medications) {\n  const med = item.json;\n  if (!med.last_purchase_date || !med.medication?.quantity_per_package) continue;\n\n  const dailyUsage = (med.daily_dosage_times || 1) * (med.daily_dosage_quantity || 1);\n  const durationDays = Math.floor(med.medication.quantity_per_package / dailyUsage);\n\n  const lastPurchase = new Date(med.last_purchase_date);\n  const endDate = new Date(lastPurchase);\n  endDate.setDate(endDate.getDate() + durationDays);\n\n  const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));\n  const alertDays = med.alert_days_before || 5;\n\n  if (med.last_notified_at) {\n    const lastNotified = new Date(med.last_notified_at);\n    lastNotified.setHours(0,0,0,0);\n    if (lastNotified.getTime() === today.getTime()) continue;\n  }\n\n  if (diffDays <= alertDays && diffDays >= 0) {\n    results.push({\n      json: {\n        ...med,\n        days_remaining: diffDays,\n        estimated_end_date: endDate.toISOString().split('T')[0],\n        medication_name: med.medication?.medication_name,\n        customer_name: med.customer?.full_name,\n        customer_phone: med.customer?.phone,\n        customer_id: med.customer?.id\n      }\n    });\n  }\n}\n\nif (results.length === 0) {\n  return [{ json: { no_alerts: true, message: 'Nenhum alerta necessario hoje' } }];\n}\n\nreturn results;"
+      }
+    },
+    {
+      "id": "node-04-if",
+      "name": "Tem Alertas",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.no_alerts }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-05-noop",
+      "name": "Sem Alertas Hoje",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        460
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "node-06-split",
+      "name": "Loop por Cliente",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "node-07-message",
+      "name": "Montar Mensagem WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nconst daysText = item.days_remaining === 0\n  ? 'acaba *hoje*'\n  : item.days_remaining === 1\n    ? 'acaba em *1 dia*'\n    : `acaba em *${item.days_remaining} dias*`;\n\nconst msg = `Ola, *${item.customer_name}*! 👋\\n\\nAqui é da sua farmácia de confiança! 💊\\n\\nNotamos que o seu *${item.medication_name}* ${daysText} (previsão: ${item.estimated_end_date}).\\n\\nNao deixe seu tratamento ser interrompido! 🏥\\n\\n🚀 *Quer receber em domicílio?* Entregamos no conforto da sua casa!\\n\\nResponda *SIM* para agendarmos ou *NAO* se já providenciou.\\n\\nConte conosco! 😊`;\n\nconst rawPhone = item.customer_phone?.replace(/\\D/g, '') || '';\nconst phone = rawPhone.startsWith('55') ? rawPhone : '55' + rawPhone;\n\nreturn [{ json: { ...item, whatsapp_message: msg, phone_e164: phone } }];"
+      }
+    },
+    {
+      "id": "node-08-whatsapp",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $vars.RXFLOW_WA_PHONE_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.RXFLOW_WA_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $json.phone_e164, type: 'text', text: { body: $json.whatsapp_message } }) }}",
+        "options": {
+          "ignore4xxStatusCode": true
+        }
+      }
+    },
+    {
+      "id": "node-09-update",
+      "name": "Atualizar Ultima Notificacao",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        300
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $vars.RXFLOW_SUPABASE_URL }}/rest/v1/rx_customer_medications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.RXFLOW_SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.RXFLOW_SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Montar Mensagem WhatsApp').item.json.id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ JSON.stringify({ last_notified_at: new Date().toISOString() }) }",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-10-log",
+      "name": "Log no Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.RXFLOW_SUPABASE_URL }}/rest/v1/rx_n8n_logs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $vars.RXFLOW_SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.RXFLOW_SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ tenant_id: $('Montar Mensagem WhatsApp').item.json.tenant_id, workflow_name: 'Lembrete Medicamentos Uso Continuo', status: 'success', started_at: new Date().toISOString(), output_data: { customer_name: $('Montar Mensagem WhatsApp').item.json.customer_name, medication_name: $('Montar Mensagem WhatsApp').item.json.medication_name, days_remaining: $('Montar Mensagem WhatsApp').item.json.days_remaining, phone: $('Montar Mensagem WhatsApp').item.json.customer_phone } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-11-back",
+      "name": "Proximo Item",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2220,
+        300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Agendamento Diario 9h": {
+      "main": [
+        [
+          {
+            "node": "Buscar Medicamentos Ativos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Medicamentos Ativos": {
+      "main": [
+        [
+          {
+            "node": "Calcular Dias Restantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Dias Restantes": {
+      "main": [
+        [
+          {
+            "node": "Tem Alertas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Alertas": {
+      "main": [
+        [
+          {
+            "node": "Loop por Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sem Alertas Hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop por Cliente": {
+      "main": [
+        [
+          {
+            "node": "Montar Mensagem WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Mensagem WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Ultima Notificacao",
+            "type": "main",
+            "Atualizar Ultima Notificacao": {
+            "index": 0
+          }
+        ]
+      ]
+    },
+      "main": [
+        [
+          {
+            "node": "Log no Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log no Supabase": {
+      "main": [
+        [
+          {
+            "node": "Proximo Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "rxflow"
+    },
+    {
+      "name": "medicamentos"
+    },
+    {
+      "name": "whatsapp"
+    }
+  ]
+}
