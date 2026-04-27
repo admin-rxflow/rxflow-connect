@@ -37,7 +37,7 @@ export function useUpdateAIConfig() {
       // Because tenant_id is UNIQUE, we can use upsert on it
       const { data, error } = await supabase
         .from('rx_ai_configs')
-        .upsert(config, { onConflict: 'tenant_id' })
+        .upsert(config as AIConfigInsert, { onConflict: 'tenant_id' })
         .select()
         .single();
 
