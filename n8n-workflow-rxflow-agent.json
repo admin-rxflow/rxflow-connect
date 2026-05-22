@@ -1,0 +1,358 @@
+{
+  "name": "RxFlow AI Agent v2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rxflow-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook - Entrada",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "rx_tenants",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.tenant_id }}" }
+          ]
+        }
+      },
+      "id": "node-get-tenant",
+      "name": "Supabase: Config do Tenant",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "credentials": { "supabaseApi": { "id": "cred-supabase", "name": "Supabase" } }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "rx_ai_configs",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "tenant_id", "condition": "eq", "keyValue": "={{ $('Webhook - Entrada').item.json.tenant_id }}" }
+          ]
+        }
+      },
+      "id": "node-get-ai-config",
+      "name": "Supabase: Config do Agente",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [640, 300],
+      "credentials": { "supabaseApi": { "id": "cred-supabase", "name": "Supabase" } }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "rx_messages",
+        "returnAll": false,
+        "limit": 10,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "conversation_id", "condition": "eq", "keyValue": "={{ $('Webhook - Entrada').item.json.conversation_id }}" }
+          ]
+        }
+      },
+      "id": "node-get-history",
+      "name": "Supabase: Histórico da Conversa",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [860, 300],
+      "credentials": { "supabaseApi": { "id": "cred-supabase", "name": "Supabase" } }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook - Entrada').item.json.message_text }}",
+        "options": {
+          "systemMessage": "={{ $('Supabase: Config do Agente').first().json.system_prompt + '\\n\\n# FARMÁCIA\\n- Nome: ' + $('Supabase: Config do Agente').first().json.pharmacy_name + '\\n- Horário: ' + $('Supabase: Config do Agente').first().json.pharmacy_hours + '\\n\\n# CONTEXTO\\n- Tenant ID: ' + $('Webhook - Entrada').item.json.tenant_id + '\\n- Conversa ID: ' + $('Webhook - Entrada').item.json.conversation_id + '\\n- Cliente: ' + $('Webhook - Entrada').item.json.customer_phone + '\\n\\n# MODO AUTÔNOMO\\n- Ativo: ' + $('Supabase: Config do Agente').first().json.autonomous_mode + '\\n- Limite (R$): ' + $('Supabase: Config do Agente').first().json.autonomous_max_value + '\\n\\n# MENSAGENS PADRÃO\\n- Espera: ' + $('Supabase: Config do Agente').first().json.msg_waiting + '\\n- Receita: ' + $('Supabase: Config do Agente').first().json.msg_prescription_request + '\\n- Controlado: ' + $('Supabase: Config do Agente').first().json.msg_controlled_warning + '\\n- Encerramento: ' + $('Supabase: Config do Agente').first().json.msg_closing }}"
+        }
+      },
+      "id": "node-ai-agent",
+      "name": "Agente IA RxFlow",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [1080, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": { "temperature": 0.4 }
+      },
+      "id": "node-openai-model",
+      "name": "OpenAI GPT-4o",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [1080, 520],
+      "credentials": { "openAiApi": { "id": "cred-openai", "name": "OpenAI" } }
+    },
+    {
+      "parameters": {
+        "name": "verificar_estoque",
+        "description": "Verifica disponibilidade e preço de um medicamento no estoque. Use quando o cliente perguntar sobre disponibilidade, preço ou quiser comprar.",
+        "method": "POST",
+        "url": "https://qhmpqqemuwbhazsxbcib.supabase.co/functions/v1/rx-tools",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "action", "value": "check_stock" },
+            { "name": "tenant_id", "value": "={{ $('Webhook - Entrada').item.json.tenant_id }}" },
+            { "name": "medication_name", "value": "={medicationName}" }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "medicationName", "description": "Nome do medicamento a verificar" }
+          ]
+        }
+      },
+      "id": "tool-check-stock",
+      "name": "Tool: Verificar Estoque",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [840, 520],
+      "credentials": { "httpHeaderAuth": { "id": "cred-supabase-header", "name": "Supabase Service Key Header" } }
+    },
+    {
+      "parameters": {
+        "name": "criar_pedido",
+        "description": "Cria pedido de venda. Use quando cliente confirmar compra. Respeita modo autônomo para aprovação automática ou manual.",
+        "method": "POST",
+        "url": "https://qhmpqqemuwbhazsxbcib.supabase.co/functions/v1/rx-tools",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "action", "value": "create_order" },
+            { "name": "tenant_id", "value": "={{ $('Webhook - Entrada').item.json.tenant_id }}" },
+            { "name": "conversation_id", "value": "={{ $('Webhook - Entrada').item.json.conversation_id }}" },
+            { "name": "customer_phone", "value": "={{ $('Webhook - Entrada').item.json.customer_phone }}" },
+            { "name": "customer_name", "value": "={{ $('Webhook - Entrada').item.json.customer_name }}" },
+            { "name": "items", "value": "={orderItems}" },
+            { "name": "delivery_address", "value": "={deliveryAddress}" },
+            { "name": "requires_prescription", "value": "={requiresPrescription}" }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "orderItems", "description": "Array JSON: [{medication_code, medication_name, quantity, unit_price, subtotal}]" },
+            { "name": "deliveryAddress", "description": "Endereço de entrega (vazio se retirada)" },
+            { "name": "requiresPrescription", "description": "true se exige receita, false caso contrário" }
+          ]
+        }
+      },
+      "id": "tool-create-order",
+      "name": "Tool: Criar Pedido",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [980, 520],
+      "credentials": { "httpHeaderAuth": { "id": "cred-supabase-header", "name": "Supabase Service Key Header" } }
+    },
+    {
+      "parameters": {
+        "name": "buscar_conhecimento",
+        "description": "Busca informações na base de conhecimento da farmácia: políticas, FAQs, procedimentos.",
+        "method": "POST",
+        "url": "https://qhmpqqemuwbhazsxbcib.supabase.co/functions/v1/rx-tools",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "action", "value": "get_knowledge" },
+            { "name": "tenant_id", "value": "={{ $('Webhook - Entrada').item.json.tenant_id }}" },
+            { "name": "query", "value": "={searchQuery}" }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "searchQuery", "description": "Termos para busca na base de conhecimento" }
+          ]
+        }
+      },
+      "id": "tool-get-knowledge",
+      "name": "Tool: Base de Conhecimento",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [1120, 520],
+      "credentials": { "httpHeaderAuth": { "id": "cred-supabase-header", "name": "Supabase Service Key Header" } }
+    },
+    {
+      "parameters": {
+        "name": "escalar_para_humano",
+        "description": "Escala a conversa para atendente humano. Use quando: cliente solicitar humano, situação complexa, reclamação grave ou palavra de emergência.",
+        "method": "POST",
+        "url": "https://qhmpqqemuwbhazsxbcib.supabase.co/functions/v1/rx-tools",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "action", "value": "escalate_to_human" },
+            { "name": "conversation_id", "value": "={{ $('Webhook - Entrada').item.json.conversation_id }}" },
+            { "name": "reason", "value": "={escalationReason}" }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "escalationReason", "description": "Motivo da escalação" }
+          ]
+        }
+      },
+      "id": "tool-escalate",
+      "name": "Tool: Escalar para Humano",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [1260, 520],
+      "credentials": { "httpHeaderAuth": { "id": "cred-supabase-header", "name": "Supabase Service Key Header" } }
+    },
+    {
+      "parameters": {
+        "name": "notificar_entregador",
+        "description": "Notifica entregador disponível após pedido confirmado com endereço de entrega.",
+        "method": "POST",
+        "url": "https://qhmpqqemuwbhazsxbcib.supabase.co/functions/v1/rx-tools",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "action", "value": "notify_delivery" },
+            { "name": "tenant_id", "value": "={{ $('Webhook - Entrada').item.json.tenant_id }}" },
+            { "name": "order_id", "value": "={orderId}" },
+            { "name": "customer_address", "value": "={customerAddress}" }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            { "name": "orderId", "description": "ID do pedido criado" },
+            { "name": "customerAddress", "description": "Endereço completo de entrega" }
+          ]
+        }
+      },
+      "id": "tool-notify-delivery",
+      "name": "Tool: Notificar Entregador",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [1400, 520],
+      "credentials": { "httpHeaderAuth": { "id": "cred-supabase-header", "name": "Supabase Service Key Header" } }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendText",
+        "instanceName": "={{ $('Supabase: Config do Tenant').first().json.evolution_instance }}",
+        "remoteJid": "={{ $('Webhook - Entrada').item.json.customer_phone + '@s.whatsapp.net' }}",
+        "messageText": "={{ $('Agente IA RxFlow').item.json.output }}"
+      },
+      "id": "node-send-whatsapp",
+      "name": "Evolution API: Enviar Resposta",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [1300, 300],
+      "credentials": { "evolutionApi": { "id": "cred-evolution", "name": "Evolution API" } }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "rx_messages",
+        "fields": {
+          "values": [
+            { "fieldId": "conversation_id", "fieldValue": "={{ $('Webhook - Entrada').item.json.conversation_id }}" },
+            { "fieldId": "tenant_id", "fieldValue": "={{ $('Webhook - Entrada').item.json.tenant_id }}" },
+            { "fieldId": "message_text", "fieldValue": "={{ $('Agente IA RxFlow').item.json.output }}" },
+            { "fieldId": "message_type", "fieldValue": "text" },
+            { "fieldId": "sender_type", "fieldValue": "ai_agent" }
+          ]
+        }
+      },
+      "id": "node-save-message",
+      "name": "Supabase: Salvar Resposta IA",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1520, 300],
+      "credentials": { "supabaseApi": { "id": "cred-supabase", "name": "Supabase" } }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"received\": true }",
+        "options": {}
+      },
+      "id": "node-respond",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1740, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Entrada": {
+      "main": [[{ "node": "Supabase: Config do Tenant", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Config do Tenant": {
+      "main": [[{ "node": "Supabase: Config do Agente", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Config do Agente": {
+      "main": [[{ "node": "Supabase: Histórico da Conversa", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Histórico da Conversa": {
+      "main": [[{ "node": "Agente IA RxFlow", "type": "main", "index": 0 }]]
+    },
+    "Agente IA RxFlow": {
+      "main": [[{ "node": "Evolution API: Enviar Resposta", "type": "main", "index": 0 }]]
+    },
+    "Evolution API: Enviar Resposta": {
+      "main": [[{ "node": "Supabase: Salvar Resposta IA", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Salvar Resposta IA": {
+      "main": [[{ "node": "Responder Webhook", "type": "main", "index": 0 }]]
+    },
+    "OpenAI GPT-4o": {
+      "ai_languageModel": [[{ "node": "Agente IA RxFlow", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Tool: Verificar Estoque": {
+      "ai_tool": [[{ "node": "Agente IA RxFlow", "type": "ai_tool", "index": 0 }]]
+    },
+    "Tool: Criar Pedido": {
+      "ai_tool": [[{ "node": "Agente IA RxFlow", "type": "ai_tool", "index": 0 }]]
+    },
+    "Tool: Base de Conhecimento": {
+      "ai_tool": [[{ "node": "Agente IA RxFlow", "type": "ai_tool", "index": 0 }]]
+    },
+    "Tool: Escalar para Humano": {
+      "ai_tool": [[{ "node": "Agente IA RxFlow", "type": "ai_tool", "index": 0 }]]
+    },
+    "Tool: Notificar Entregador": {
+      "ai_tool": [[{ "node": "Agente IA RxFlow", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [{ "name": "rxflow" }, { "name": "whatsapp" }, { "name": "ai-agent" }],
+  "meta": { "instanceId": "rxflow-connect" }
+}
